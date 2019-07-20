@@ -38,5 +38,22 @@ ${P2P_PORT}`);
             socket.on('open', () => this.connectSocket(socket));
         });
     }
-}
+
+    messageHandler(socket) {
+        //on receiving a message execute a callback function
+        socket.on('message', message => {
+            const data = JSON.parse(message);
+            console.log("data ", data);
+            this.blockchain.replaceChain(data);
+        });
+    }
+        sendChain(socket) {
+            socket.send(JSON.stringify(this.blockchain.chain));
+        }
+        syncChain() {
+            this.sockets.forEach(socket => {
+                this.sendChain(socket);
+            });
+        }
+    }
 module.exports = P2pserver;
