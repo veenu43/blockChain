@@ -38,4 +38,18 @@ describe("Block", () => {
         expect(lastBlock.hash).toEqual('genesis-hash');
         expect(lastBlock.data).toEqual([]);
     })
+    it('generates a hash that matches the difficulty', () => {
+        // use the dynamic difficulty to match the difficulty
+        expect(block.hash.substring(0,
+            block.difficulty)).toEqual('0'.repeat(block.difficulty));
+    });
+    it('lower the difficulty for a slower generated block', () => {
+        // 300000 will make it insanely slow
+        expect(Block.adjustDifficulty(block, block.timestamp +
+            300000)).toEqual(block.difficulty - 1);
+    });
+    it('raise the difficulty for a faster generated block', () => {
+        expect(Block.adjustDifficulty(block, block.timestamp +
+            1)).toEqual(block.difficulty + 1);
+    });
 })

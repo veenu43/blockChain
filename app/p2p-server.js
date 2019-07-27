@@ -3,6 +3,7 @@ const WebSocket = require('ws');
 const P2P_PORT = process.env.P2P_PORT || 5001;
 //list of address to connect to
 const peers = process.env.PEERS ? process.env.PEERS.split(',') : [];
+
 class P2pserver {
     constructor(blockchain) {
         this.blockchain = blockchain;
@@ -19,21 +20,24 @@ class P2pserver {
         // to connect to the peers that we have specified
         this.connectToPeers();
         console.log(`Listening for peer to peer connection on port :
-${P2P_PORT}`);
+        ${P2P_PORT}`);
     }
     // after making connection to a socket
     connectSocket(socket) {
         // push the socket to the socket array
         this.sockets.push(socket);
         console.log("Socket connected");
+        // register a message event listener to the socket
+        this.messageHandler(socket);
+        // on new connection send the blockchain chain to the peer
+        this.sendChain(socket);
     }
     connectToPeers() {
         //connect to each peer
         peers.forEach(peer => {
             // create a socket for each peer
             const socket = new WebSocket(peer);
-            // open event listener is emitted when a connection is
-            established
+            // open event listener is emitted when a connection is  established
             // saving the socket in the array
             socket.on('open', () => this.connectSocket(socket));
         });
@@ -47,13 +51,13 @@ ${P2P_PORT}`);
             this.blockchain.replaceChain(data);
         });
     }
-        sendChain(socket) {
-            socket.send(JSON.stringify(this.blockchain.chain));
-        }
-        syncChain() {
-            this.sockets.forEach(socket => {
-                this.sendChain(socket);
-            });
-        }
+    sendChain(socket) {
+        socket.send(JSON.stringify(this.blockchain.chain));
     }
+    syncChain() {
+        this.sockets.forEach(socket => {
+            this.sendChain(socket);
+        });
+    }
+}
 module.exports = P2pserver;
